@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relevamiento de Parcelas — Cementerio Municipal · CEM Esquina</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+      background: #f0ece3;
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+    .page-wrap { max-width: 560px; margin: 0 auto; }
+    .form-wrap {
+      background: #f8f5ee;
+      border: 1px solid #d6d0c4;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .form-header {
+      background: #0e5a9e;
+      padding: 16px 20px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .header-icon {
+      background: rgba(255,255,255,0.15); border-radius: 6px;
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .form-header h1 { color: #fff; font-size: 15px; font-weight: 500; line-height: 1.3; }
+    .form-header p { color: rgba(255,255,255,0.7); font-size: 12px; margin-top: 2px; }
+    .form-body { padding: 20px; }
+    .timestamp-row { font-size: 11px; color: #aaa; font-family: 'IBM Plex Mono', monospace; margin-bottom: 14px; }
+    .toast {
+      display: none; padding: 10px 14px; border-radius: 5px;
+      font-size: 13px; font-weight: 500; margin-bottom: 12px;
+      align-items: center; gap: 8px;
+    }
+    .toast.success { display: flex; background: #eaf3de; color: #3b6d11; border: 1px solid #c0dd97; }
+    .toast.error   { display: flex; background: #fcebeb; color: #a32d2d; border: 1px solid #f7c1c1; }
+    .form-section {
+      background: #fff; border: 1px solid #e0d9ce;
+      border-radius: 6px; padding: 16px; margin-bottom: 14px;
+    }
+    .section-title {
+      font-size: 11px; font-weight: 500; color: #0e5a9e;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 14px; padding-bottom: 8px;
+      border-bottom: 1px solid #e8e2d6;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .section-title i { font-size: 14px; color: #b8863d; }
+    .field { margin-bottom: 12px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label { display: block; font-size: 12px; font-weight: 500; color: #555; margin-bottom: 5px; }
+    .field input, .field select {
+      width: 100%; border: 1px solid #d0c9bc; border-radius: 4px;
+      padding: 8px 10px; font-size: 14px; font-family: inherit;
+      background: #fdfcfa; color: #1a1a1a; transition: border-color 0.15s;
+    }
+    .field input:focus, .field select:focus { outline: none; border-color: #0e5a9e; background: #fff; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .req { color: #b8863d; margin-left: 2px; }
+    .tipo-selector { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tipo-btn {
+      flex: 1; min-width: 90px; padding: 8px 10px;
+      border: 1.5px solid #d0c9bc; border-radius: 5px;
+      background: #fdfcfa; font-size: 12px; font-weight: 500;
+      color: #666; cursor: pointer; text-align: center; transition: all 0.15s;
+      font-family: inherit;
+    }
+    .tipo-btn:hover { border-color: #0e5a9e; color: #0e5a9e; }
+    .tipo-btn.active { border-color: #0e5a9e; background: #e6f1fb; color: #0e5a9e; }
+    .ubicacion-fields { display: none; }
+    .ubicacion-fields.visible { display: block; margin-top: 12px; }
+    .foto-area {
+      border: 1.5px dashed #c0b8a8; border-radius: 6px;
+      padding: 20px; text-align: center; cursor: pointer;
+      background: #fdfcfa; transition: border-color 0.15s, background 0.15s;
+    }
+    .foto-area:hover { border-color: #0e5a9e; background: #e6f1fb; }
+    .foto-area i { font-size: 28px; color: #b0a898; display: block; margin-bottom: 6px; }
+    .foto-area p { font-size: 12px; color: #888; }
+    .foto-area input { display: none; }
+    #foto-preview { margin-top: 10px; display: none; }
+    #foto-preview img { max-width: 100%; max-height: 180px; border-radius: 4px; border: 1px solid #d0c9bc; object-fit: cover; }
+    .foto-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #eaf3de; color: #3b6d11; border: 1px solid #c0dd97;
+      border-radius: 4px; padding: 4px 8px; font-size: 11px; font-weight: 500; margin-top: 6px;
+    }
+    .btn-submit {
+      width: 100%; background: #0e5a9e; color: #fff;
+      border: none; border-radius: 5px; padding: 12px;
+      font-size: 14px; font-weight: 500; font-family: inherit;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background 0.15s;
+    }
+    .btn-submit:hover { background: #0b4a85; }
+    .btn-submit:disabled { background: #8aaecc; cursor: not-allowed; }
+    .form-footer {
+      border-top: 1px solid #e0d9ce; padding: 10px 20px;
+      display: flex; align-items: center; gap: 6px; font-size: 11px; color: #999;
+    }
+    .form-footer i { font-size: 12px; color: #b8863d; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="page-wrap">
+  <div class="form-wrap">
+    <div class="form-header">
+      <div class="header-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L4 9v12h16V9L12 3z"/><path d="M9 21V12h6v9"/></svg>
+      </div>
+      <div>
+        <h1>Relevamiento de parcelas — Cementerio municipal</h1>
+        <p>Municipalidad de Esquina · Centro Estadístico Municipal</p>
+      </div>
+    </div>
+
+    <div class="form-body">
+      <div class="timestamp-row" id="ts-display"></div>
+      <div id="toast" class="toast"></div>
+
+      <div class="form-section">
+        <div class="section-title"><i class="ti ti-id-badge" aria-hidden="true"></i>Relevador/a</div>
+        <div class="field">
+          <label for="relevador">Nombre y apellido <span class="req">*</span></label>
+          <input type="text" id="relevador" placeholder="Ej: Rodríguez, María">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title"><i class="ti ti-user" aria-hidden="true"></i>Datos del extinto/a</div>
+        <div class="field">
+          <label for="nombre">Nombre y apellido del extinto/a <span class="req">*</span></label>
+          <input type="text" id="nombre" placeholder="Ej: García, Juan Carlos" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="alias">Alias que figura en placa</label>
+          <input type="text" id="alias" placeholder="Dejá en blanco si coincide con el nombre">
+        </div>
+        <div class="field">
+          <label for="anio">Año de fallecimiento <span class="req">*</span></label>
+          <input type="number" id="anio" placeholder="Ej: 1987" min="1800" max="2099">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title"><i class="ti ti-map-pin" aria-hidden="true"></i>Tipo de sepultura y ubicación</div>
+        <div class="field">
+          <label>Tipo de sepultura <span class="req">*</span></label>
+          <div class="tipo-selector">
+            <button class="tipo-btn" data-tipo="nicho" onclick="selTipo(this)">Nicho municipal</button>
+            <button class="tipo-btn" data-tipo="panteon" onclick="selTipo(this)">Panteón</button>
+            <button class="tipo-btn" data-tipo="tumba" onclick="selTipo(this)">Tumba</button>
+          </div>
+          <input type="hidden" id="tipo_sepultura">
+        </div>
+        <div class="ubicacion-fields" id="ub-nicho">
+          <div class="field-row">
+            <div class="field"><label for="nicho_sector">Sector <span class="req">*</span></label><input type="text" id="nicho_sector" placeholder="Ej: A"></div>
+            <div class="field"><label for="nicho_numero">Número <span class="req">*</span></label><input type="text" id="nicho_numero" placeholder="Ej: 42"></div>
+          </div>
+        </div>
+        <div class="ubicacion-fields" id="ub-panteon">
+          <div class="field-row">
+            <div class="field"><label for="panteon_lote">Lote <span class="req">*</span></label><input type="text" id="panteon_lote" placeholder="Ej: 15"></div>
+            <div class="field"><label for="panteon_sector">Sector <span class="req">*</span></label><input type="text" id="panteon_sector" placeholder="Ej: Norte"></div>
+          </div>
+        </div>
+        <div class="ubicacion-fields" id="ub-tumba">
+          <div class="field-row">
+            <div class="field"><label for="tumba_lote">Lote <span class="req">*</span></label><input type="text" id="tumba_lote" placeholder="Ej: 8"></div>
+            <div class="field"><label for="tumba_sector">Sector <span class="req">*</span></label><input type="text" id="tumba_sector" placeholder="Ej: Sur"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title"><i class="ti ti-camera" aria-hidden="true"></i>Foto de la sepultura</div>
+        <div class="foto-area" onclick="document.getElementById('foto-input').click()">
+          <i class="ti ti-photo-up" aria-hidden="true"></i>
+          <p>Tocá para seleccionar una foto</p>
+          <p style="margin-top:3px; font-size:11px; color:#aaa;">JPG, PNG — máx. 5 MB · se sube a Drive automáticamente</p>
+          <input type="file" id="foto-input" accept="image/*" onchange="previewFoto(this)">
+        </div>
+        <div id="foto-preview">
+          <img id="foto-img" src="" alt="Preview de la foto">
+          <div class="foto-badge"><i class="ti ti-cloud-upload" style="font-size:12px" aria-hidden="true"></i><span id="foto-nombre"></span></div>
+        </div>
+      </div>
+
+      <button class="btn-submit" id="btn-enviar" onclick="enviarFormulario()">
+        <i class="ti ti-send" aria-hidden="true"></i>
+        Guardar registro
+      </button>
+    </div>
+
+    <div class="form-footer">
+      <i class="ti ti-shield-check" aria-hidden="true"></i>
+      Los datos se guardan en el sistema CEM · Municipalidad de Esquina
+    </div>
+  </div>
+</div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxC2NKPU6atMeYbrQODRyI36ASHl4fwelM2xvmgCrZNddZZxeSmyLEnkI-eSizh5E5G/exec';
+
+let tipoSeleccionado = '', fotoBase64 = '', fotoNombre = '';
+
+function pad(n){ return String(n).padStart(2,'0'); }
+function setTimestamp(){
+  const now = new Date();
+  document.getElementById('ts-display').textContent =
+    'Fecha y hora de carga: '+pad(now.getDate())+'/'+pad(now.getMonth()+1)+'/'+now.getFullYear()+' '+pad(now.getHours())+':'+pad(now.getMinutes());
+}
+setTimestamp(); setInterval(setTimestamp, 30000);
+
+function selTipo(btn){
+  document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  tipoSeleccionado = btn.dataset.tipo;
+  document.getElementById('tipo_sepultura').value = tipoSeleccionado;
+  ['nicho','panteon','tumba'].forEach(t =>
+    document.getElementById('ub-'+t).classList.toggle('visible', t === tipoSeleccionado)
+  );
+}
+
+function previewFoto(input){
+  if(!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  fotoNombre = file.name;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    fotoBase64 = e.target.result.split(',')[1];
+    document.getElementById('foto-img').src = e.target.result;
+    document.getElementById('foto-nombre').textContent = file.name;
+    document.getElementById('foto-preview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function showToast(msg, tipo){
+  const el = document.getElementById('toast');
+  el.className = 'toast ' + tipo;
+  el.innerHTML = '<i class="ti ti-'+(tipo==='success'?'circle-check':'alert-circle')+'" aria-hidden="true"></i> '+msg;
+  el.scrollIntoView({behavior:'smooth', block:'nearest'});
+  if(tipo==='success') setTimeout(()=>{ el.className='toast'; }, 6000);
+}
+
+function getUbicacion(){
+  if(tipoSeleccionado==='nicho')   return 'Sector '+document.getElementById('nicho_sector').value+' | N° '+document.getElementById('nicho_numero').value;
+  if(tipoSeleccionado==='panteon') return 'Lote '+document.getElementById('panteon_lote').value+' | Sector '+document.getElementById('panteon_sector').value;
+  if(tipoSeleccionado==='tumba')   return 'Lote '+document.getElementById('tumba_lote').value+' | Sector '+document.getElementById('tumba_sector').value;
+  return '';
+}
+
+function validar(){
+  if(!document.getElementById('relevador').value.trim()){ showToast('Ingresá el nombre del relevador/a.','error'); return false; }
+  if(!document.getElementById('nombre').value.trim()){ showToast('Ingresá el nombre del extinto/a.','error'); return false; }
+  if(!document.getElementById('anio').value.trim()){ showToast('Ingresá el año de fallecimiento.','error'); return false; }
+  if(!tipoSeleccionado){ showToast('Seleccioná el tipo de sepultura.','error'); return false; }
+  if(tipoSeleccionado==='nicho' && (!document.getElementById('nicho_sector').value || !document.getElementById('nicho_numero').value)){
+    showToast('Completá sector y número del nicho.','error'); return false; }
+  if(tipoSeleccionado==='panteon' && (!document.getElementById('panteon_lote').value || !document.getElementById('panteon_sector').value)){
+    showToast('Completá lote y sector del panteón.','error'); return false; }
+  if(tipoSeleccionado==='tumba' && (!document.getElementById('tumba_lote').value || !document.getElementById('tumba_sector').value)){
+    showToast('Completá lote y sector de la tumba.','error'); return false; }
+  return true;
+}
+
+async function enviarFormulario(){
+  if(!validar()) return;
+  const btn = document.getElementById('btn-enviar');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2" aria-hidden="true" style="animation:spin 1s linear infinite"></i> Guardando...';
+
+  const now = new Date();
+  const payload = {
+    fecha_carga: pad(now.getDate())+'/'+pad(now.getMonth()+1)+'/'+now.getFullYear()+' '+pad(now.getHours())+':'+pad(now.getMinutes()),
+    relevador: document.getElementById('relevador').value.trim(),
+    nombre: document.getElementById('nombre').value.trim(),
+    alias: document.getElementById('alias').value.trim(),
+    anio_fallecimiento: document.getElementById('anio').value.trim(),
+    tipo_sepultura: tipoSeleccionado,
+    ubicacion: getUbicacion(),
+    foto_base64: fotoBase64 || '',
+    foto_nombre: fotoNombre || ''
+  };
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+    showToast('Registro guardado. La foto se subió a Drive automáticamente.','success');
+    limpiarForm();
+  } catch(e){
+    showToast('Error al guardar. Revisá la conexión e intentá de nuevo.','error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ti ti-send" aria-hidden="true"></i> Guardar registro';
+}
+
+function limpiarForm(){
+  ['relevador','nombre','alias','anio','nicho_sector','nicho_numero','panteon_lote','panteon_sector','tumba_lote','tumba_sector'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  tipoSeleccionado=''; fotoBase64=''; fotoNombre='';
+  document.querySelectorAll('.tipo-btn').forEach(b=>b.classList.remove('active'));
+  ['nicho','panteon','tumba'].forEach(t=>document.getElementById('ub-'+t).classList.remove('visible'));
+  document.getElementById('foto-preview').style.display='none';
+  document.getElementById('foto-input').value='';
+}
+</script>
+</body>
+</html>
